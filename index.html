@@ -61,7 +61,8 @@ input,select{font:inherit;color:inherit}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 32px;border-bottom:1px solid var(--line);background:rgba(255,248,241,.92);backdrop-filter:blur(8px);position:sticky;top:0;z-index:20}
 .top h1{font-size:19px;letter-spacing:-.4px}
 .top .crumb{font-size:12.5px;color:var(--plum3)}
-.me{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 14px;font-size:13.5px;position:relative}
+.top>div:first-child{min-width:0;flex:1}
+.me{cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 6px 5px 14px;font-size:13.5px;position:relative}
 .me .av{width:30px;height:30px;border-radius:50%;background:var(--pink2);color:var(--pink);display:grid;place-items:center;font-weight:800;font-size:13px}
 .me-menu{position:absolute;right:0;top:46px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh);padding:6px;min-width:150px;display:none;z-index:30}
 .me-menu.on{display:block}
@@ -355,9 +356,9 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-si
         <div class="crumb" id="crumb"></div>
         <h1 id="pageTitle"></h1>
       </div>
-      <button class="me" id="meBtn"><span class="nm" id="meName"></span><span class="av" id="meAv">♥</span>
+      <div class="me" id="meBtn" role="button" tabindex="0"><span class="nm" id="meName"></span><span class="av" id="meAv">♥</span>
         <div class="me-menu" id="meMenu"><button data-act="courses">내 교재 목록</button><button data-act="logout">로그아웃</button></div>
-      </button>
+      </div>
     </header>
 
     <div class="content">
