@@ -528,6 +528,7 @@ const SB_URL='https://hypygdafliyouaehshfc.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5cHlnZGFmbGl5b3VhZWhzaGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMTY2NjQsImV4cCI6MjEwNzg5MjY2NH0.X2vuMvYYIJpOTTkzBb1FTtecSE5Dk35Cvp8diEY09rw';
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'sk-lecture-auth'}});
 const $=s=>document.querySelector(s);
+const LSN=ls=>ls>=90?'외부지문':ls+'과';
 const LCOLS=['#f65e7a','#274c8f','#159a8c','#e8930c','#8a4fd8','#d9468f','#2f8fd8','#7a8f1f'];
 const GRADE_ORDER=['초3','초4','초5','초6','중1','중2','중3','고1','고2','고3'];
 function toast(m){const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),2200);}
@@ -583,7 +584,7 @@ function normVideos(cid){
   const lessons=[...new Set(vs.map(v=>v.lesson))];
   return vs.map((v,i)=>{const chs=(v.chapters||[]).map(([a,b])=>({s:tsec(a),tm:a,tx:b}));
     return {uid:v.id,id:v.yt_id,ls:v.lesson,no:v.no,topic:v.topic,sub:v.sub||'',len:v.len_sec,key:v.key_en||'',ko:v.key_ko||'',blank:v.blank||'',point:v.point||'',sum:v.summary||[],tags:v.tags||'',idx:i,
-      code:`${v.lesson}과 ${['','①','②','③','④'][v.no]||v.no}`,chs,col:LCOLS[lessons.indexOf(v.lesson)%LCOLS.length],
+      code:(v.lesson>=90?'외부지문':`${v.lesson}과 ${['','①','②','③','④'][v.no]||v.no}`),chs,col:LCOLS[lessons.indexOf(v.lesson)%LCOLS.length],
       quizAt:(chs.find(c=>c.tx.includes('퀴즈'))||chs[0]||{s:0}).s,sumAt:(chs[chs.length-1]||{s:0}).s};});
 }
 const P=l=>ST.prog[l.uid]||{watched_sec:0,last_pos:0,completed:false,memo_done:false};
@@ -699,7 +700,7 @@ function renderHome(){
   $('#stMemo').textContent=`${L.filter(l=>P(l).memo_done).length} / ${L.filter(l=>l.key).length}`;
   const lessons=[...new Set(L.map(l=>l.ls))];
   $('#lessonBars').innerHTML=lessons.map(ls=>{const g=L.filter(l=>l.ls===ls);const v=g.reduce((a,l)=>a+(P(l).completed?100:pct(l)),0)/g.length;
-    return `<div class="lb"><div class="row"><b>${ls}과</b><span class="muted">${g.map(l=>l.topic).join(' · ')}</span></div><div class="bar"><i style="width:${v}%;background:${g[0].col}"></i></div></div>`}).join('');
+    return `<div class="lb"><div class="row"><b>${LSN(ls)}</b><span class="muted">${g.map(l=>l.topic).join(' · ')}</span></div><div class="bar"><i style="width:${v}%;background:${g[0].col}"></i></div></div>`}).join('');
   // today
   const plan=c.plan||[];const t=kstToday();let pd=plan.find(x=>x.date===t),lbl='';
   if(pd)lbl=`${pd.dd} · ${+t.slice(5,7)}/${+t.slice(8)}`;else if(plan.length&&t<plan[0].date){pd=plan[0];lbl='플랜 시작 전 · 미리 보기';}
@@ -708,7 +709,7 @@ function renderHome(){
   else{$('#todayLbl').textContent=lbl;$('#todayBox').innerHTML=pd.tasks.map((tk,i)=>{const l=tk.lec?L.find(x=>`${x.ls}-${x.no}`===tk.lec):null;const ok=planDone(tk,l);
     const attr=l?`data-open="${l.idx}" ${tk.seek?`data-seek="${l.sumAt}"`:''}`:(tk.go?`data-go="${tk.go}"`:'');
     return `<div class="today-item"><div class="num" style="background:${ok?'var(--ok)':(l?l.col:'var(--plum)')}">${ok?'✓':i+1}</div><div class="tx"><b>${tk.tx}</b><small>${l?`${l.code} · ${fmtLen(l.len)} · ${({done:'완료',ing:'보는 중 '+pct(l)+'%',none:'아직 안 봤어요'})[status(l)]}`:'스스로 체크해요'}</small></div>${attr?`<button class="btn sm ${ok?'ghost':''}" ${attr}>${l?(ok?'다시 보기':'보러 가기'):'하러 가기'}</button>`:''}</div>`}).join('');}
-  $('#keyPreview').innerHTML=L.filter(l=>l.key).slice(0,4).map(l=>`<div class="today-item" data-open="${l.idx}" style="cursor:pointer"><div class="num" style="background:${l.col};font-size:11.5px">${l.ls}과${['','①','②'][l.no]||''}</div><div class="tx"><b style="font-weight:600">${l.key.replace(/<\/?mark>/g,'')}</b><small>${l.ko}</small></div></div>`).join('')+(L.length>4?`<p class="muted" style="font-size:12.5px;margin-top:10px;text-align:right">나머지 문장은 '핵심 문장 암기'에서 →</p>`:'');
+  $('#keyPreview').innerHTML=L.filter(l=>l.key).slice(0,4).map(l=>`<div class="today-item" data-open="${l.idx}" style="cursor:pointer"><div class="num" style="background:${l.col};font-size:11.5px">${l.ls>=90?'외부':l.ls+'과'+(['','①','②'][l.no]||'')}</div><div class="tx"><b style="font-weight:600">${l.key.replace(/<\/?mark>/g,'')}</b><small>${l.ko}</small></div></div>`).join('')+(L.length>4?`<p class="muted" style="font-size:12.5px;margin-top:10px;text-align:right">나머지 문장은 '핵심 문장 암기'에서 →</p>`:'');
   $('#homeGrid').innerHTML=L.map(l=>lecCard(l)).join('');
   const last=L.slice().filter(l=>ST.prog[l.uid]&&!P(l).completed).sort((a,b)=>new Date(P(b).updated_at)-new Date(P(a).updated_at))[0];
   const nx=L.find(l=>!P(l).completed);const r=last||nx||L[0];
@@ -718,7 +719,7 @@ function renderHome(){
 let lessonF='all',q='';
 function renderLectures(){
   const L=ST.L;const lessons=[...new Set(L.map(l=>l.ls))];
-  $('#lessonSeg').innerHTML=[['all',`전체 ${L.length}강`],...lessons.map(x=>[String(x),`${x}과`]),...(ST.teacher?[]:[['todo','안 본 강의']])].map(([k,n])=>`<button class="${lessonF===k?'on':''}" data-f="${k}">${n}</button>`).join('');
+  $('#lessonSeg').innerHTML=[['all',`전체 ${L.length}강`],...lessons.map(x=>[String(x),LSN(x)]),...(ST.teacher?[]:[['todo','안 본 강의']])].map(([k,n])=>`<button class="${lessonF===k?'on':''}" data-f="${k}">${n}</button>`).join('');
   let list=L.filter(l=>lessonF==='all'||(lessonF==='todo'?!P(l).completed:String(l.ls)===lessonF));
   const qq=q.trim().toLowerCase().replace(/\s+/g,' ');let out='';
   if(qq){const terms=qq.split(' ');
@@ -875,7 +876,7 @@ async function renderTStatus(){
   const since14=new Date(Date.now()-13*86400000+9*3600000).toISOString().slice(0,10);
   const byDay={};TD.daily.filter(d=>d.day>=since14&&d.sec>0).forEach(d=>{const k=d.day+'|'+d.student_id;(byDay[k]=byDay[k]||{day:d.day,sid:d.student_id,sec:0,vids:new Set()});byDay[k].sec+=d.sec;byDay[k].vids.add(d.video_id);});
   const rec=Object.values(byDay).sort((a,b)=>b.day.localeCompare(a.day)||b.sec-a.sec);
-  const vName=id=>{for(const cid in ST.videos){const v=ST.videos[cid].find(x=>x.id===id);if(v)return `${v.lesson}과${['','①','②'][v.no]||''} ${v.topic}`;}return '';};
+  const vName=id=>{for(const cid in ST.videos){const v=ST.videos[cid].find(x=>x.id===id);if(v)return `${v.lesson>=90?'외부지문':v.lesson+'과'+(['','①','②'][v.no]||'')} ${v.topic}`;}return '';};
   $('#tRecent').innerHTML=rec.length?`<div class="tbl-wrap"><table class="t"><thead><tr><th class="l">날짜</th><th class="l">학생</th><th>공부 시간</th><th class="l">본 강의</th></tr></thead><tbody>${rec.slice(0,40).map(r=>{const s=TD.students.find(x=>x.id===r.sid)||{name:'?'};return `<tr class="click" data-stu="${r.sid}"><td class="l">${+r.day.slice(5,7)}/${+r.day.slice(8)}</td><td class="l"><b>${s.name}</b></td><td><b style="color:var(--pink)">${fmtMin(r.sec)}</b></td><td class="l" style="white-space:normal">${[...r.vids].map(vName).join(', ')}</td></tr>`;}).join('')}</tbody></table></div>`:`<div class="empty" style="margin-top:12px">최근 14일 동안 학습 기록이 없어요.</div>`;
 }
 $('#tCourseSel').addEventListener('change',e=>{tCourse=e.target.value;renderTStatus();});
@@ -890,7 +891,7 @@ function openStu(sid){
   cs.forEach(c=>{const L=normVideos(c.id);const rows=L.map(l=>({l,r:tProg(sid,l.uid)}));const done=rows.filter(x=>x.r&&x.r.completed).length;
     h+=`<div class="card" style="margin-top:16px"><h3>${courseName(c)} · ${c.title}<span class="sub">완료 ${done}/${L.length}</span></h3><div class="tbl-wrap"><table class="t" style="min-width:480px"><thead><tr><th class="l">강의</th><th>시청</th><th>시간</th><th>본 횟수</th><th>암기</th><th>완료일</th></tr></thead><tbody>${rows.map(({l,r})=>{const [cl,tx]=cellCls(r,l.len);return `<tr><td class="l">${l.code} ${l.topic}</td><td><span class="cell ${cl}">${tx}</span></td><td>${r?fmtMin(r.watched_sec):'-'}</td><td>${r?r.views:0}</td><td>${r&&r.memo_done?'✓':'-'}</td><td>${r&&r.completed_at?fmtDT(r.completed_at):'-'}</td></tr>`;}).join('')}</tbody></table></div></div>`;});
   const dk=Object.keys(days).sort().reverse();
-  h+=`<div class="card" style="margin-top:16px"><h3>📅 날짜별 학습 기록<span class="sub">최근 30일</span></h3>${dk.length?`<div class="daylog">${dk.map(d=>{const sec=days[d].reduce((a,x)=>a+x.sec,0);const wd='일월화수목금토'[new Date(d+'T12:00:00+09:00').getDay()];return `<div class="r"><b>${+d.slice(5,7)}/${+d.slice(8)}(${wd})</b><span style="font-size:12.5px;color:var(--plum2)">${days[d].map(x=>{const v=vInfo(x.video_id);return v?`${v.lesson}과${['','①','②'][v.no]||''} ${v.topic} ${fmtMin(x.sec)}`:'';}).join(' · ')}</span><span class="m">${fmtMin(sec)}</span></div>`;}).join('')}</div>`:`<div class="empty" style="margin-top:10px">아직 학습 기록이 없어요.</div>`}</div>`;
+  h+=`<div class="card" style="margin-top:16px"><h3>📅 날짜별 학습 기록<span class="sub">최근 30일</span></h3>${dk.length?`<div class="daylog">${dk.map(d=>{const sec=days[d].reduce((a,x)=>a+x.sec,0);const wd='일월화수목금토'[new Date(d+'T12:00:00+09:00').getDay()];return `<div class="r"><b>${+d.slice(5,7)}/${+d.slice(8)}(${wd})</b><span style="font-size:12.5px;color:var(--plum2)">${days[d].map(x=>{const v=vInfo(x.video_id);return v?`${v.lesson>=90?'외부지문':v.lesson+'과'+(['','①','②'][v.no]||'')} ${v.topic} ${fmtMin(x.sec)}`:'';}).join(' · ')}</span><span class="m">${fmtMin(sec)}</span></div>`;}).join('')}</div>`:`<div class="empty" style="margin-top:10px">아직 학습 기록이 없어요.</div>`}</div>`;
   $('#drawerBody').innerHTML=h;$('#drawer').classList.add('on');
 }
 $('#drawerX').onclick=()=>$('#drawer').classList.remove('on');
