@@ -526,7 +526,9 @@ footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--line);font-si
 <script>
 const SB_URL='https://hypygdafliyouaehshfc.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh5cHlnZGFmbGl5b3VhZWhzaGZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIzMTY2NjQsImV4cCI6MjEwNzg5MjY2NH0.X2vuMvYYIJpOTTkzBb1FTtecSE5Dk35Cvp8diEY09rw';
-const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,storageKey:'sk-lecture-auth'}});
+try{const old=localStorage.getItem('sk-lecture-auth');if(old&&!localStorage.getItem('sb-hypygdafliyouaehshfc-auth-token'))localStorage.setItem('sb-hypygdafliyouaehshfc-auth-token',old);localStorage.removeItem('sk-lecture-auth');}catch(e){}
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
 const $=s=>document.querySelector(s);
 const LSN=ls=>ls>=90?'외부지문':ls+'과';
 const LCOLS=['#f65e7a','#274c8f','#159a8c','#e8930c','#8a4fd8','#d9468f','#2f8fd8','#7a8f1f'];
@@ -570,7 +572,7 @@ $('#loginForm').addEventListener('submit',async e=>{
   if(error){$('#loginErr').textContent='아이디나 비밀번호가 맞지 않아요.';return;}
   $('#loginView').classList.add('hide');$('#bootView').classList.remove('hide');boot();
 });
-async function logout(){await flushLog();await sb.auth.signOut();location.reload();}
+async function logout(){if(!confirm('로그아웃할까요?\n(문법 앱도 같이 로그아웃돼요)'))return;await flushLog();await sb.auth.signOut({scope:'local'});location.reload();}
 
 /* ---------- data ---------- */
 async function loadData(){
